@@ -36,6 +36,10 @@ class ReservaInvalidaError(SoftwareFJError):
     """Se lanza ante fallos específicos en el proceso de reserva."""
     pass
 
+class ServicioNoDisponibleError(SoftwareFJError):
+    """Se lanza cuando un servicio tiene parámetros inválidos o no está disponible."""
+    pass
+
 # =================================================================
 # CLASES BASE Y ABSTRACCIÓN (Pilar POO: Abstracción)
 # Uso de clases abstractas para definir contratos obligatorios.
