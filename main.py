@@ -14,6 +14,11 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'      # Añadimos el formato de fecha
 )
 
+
+def formato_cop(valor):
+    """Formatea un número como pesos colombianos (COP) con separador de miles."""
+    return f"${valor:,.0f} COP"
+
 # =================================================================
 # EXCEPCIONES PERSONALIZADAS
 # Implementación de jerarquía de errores para un manejo 
