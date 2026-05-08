@@ -56,43 +56,89 @@ class Entidad(ABC):
         pass
 
 class Cliente(Entidad):
-    """
-    Clase Cliente con Encapsulamiento de datos personales.
-    Valida la integridad de la información al momento de instanciar.
-    """
-    def __init__(self, id_cliente, nombre, correo):
-        super().__init__(id_cliente)
-        # Validación de parámetros para evitar datos corruptos
-        if not nombre or "@" not in correo:
-            raise DatosInvalidosError(f"Datos de cliente incorrectos: '{nombre}', '{correo}'")
-        
-        # Atributos privados (Encapsulamiento: uso de doble guion bajo)
-        self.__nombre = nombre  
-        self.__correo = correo
-
-    def mostrar_detalle(self):
-        """Implementación del método abstracto de Entidad."""
-        return f"Cliente: {self.__nombre} (ID: {self.id_entidad})"
-
+    _contador_id = 1  # Atributo de clase para generar IDs automáticos
+    
+    def __init__(self, nombre, email):
+        # Ya no recibimos id_cliente, lo generamos automáticamente
+        self._id = Cliente._contador_id
+        Cliente._contador_id += 1
+        # Llamamos al constructor de Entidad con el ID generado
+        super().__init__(self._id)
+        self.nombre = nombre
+        self.email = email
+        logging.info(f"Cliente creado: {self.mostrar_detalle()}")
+    
     @property
     def nombre(self):
-        """Getter para acceder al nombre privado de forma controlada."""
-        return self.__nombre
+        return self._nombre
+    
+    @nombre.setter
+    def nombre(self, valor):
+        if not valor or not valor.strip():
+            raise DatosInvalidosError("El nombre no puede estar vacío.")
+        self._nombre = valor.strip()
+    
+    @property
+    def email(self):
+        return self._email
+    
+    @email.setter
+    def email(self, valor):
+        if not valor or "@" not in valor or "." not in valor:
+            raise DatosInvalidosError(f"Email inválido: {valor}. Debe contener '@' y un punto.")
+        self._email = valor.strip()
+    
+    def mostrar_detalle(self):
+        """Implementación del método abstracto de Entidad."""
+        return f"Cliente: {self.nombre} (ID: {self.id_entidad})"
 
 # =================================================================
 # SERVICIOS Y POLIMORFISMO (Pilares POO: Herencia y Polimorfismo)
 # Implementación de métodos sobrescritos para cálculos específicos.
 # =================================================================
 class Servicio(ABC):
-    """Define la estructura base para cualquier servicio del sistema."""
-    def __init__(self, nombre_servicio, costo_base):
-        self.nombre_servicio = nombre_servicio
-        self.costo_base = costo_base
-
+    _contador_codigo = 1000  # Atributo de clase para códigos únicos
+    
+    def __init__(self, nombre, precio_base):
+        self._codigo = Servicio._contador_codigo
+        Servicio._contador_codigo += 1
+        self.nombre = nombre
+        self.precio_base = precio_base
+        logging.info(f"Servicio creado: {self.mostrar_resumen()}")
+    
+    @property
+    def nombre(self):
+        return self._nombre
+    
+    @nombre.setter
+    def nombre(self, valor):
+        if not valor or not valor.strip():
+            raise ServicioNoDisponibleError("El nombre del servicio no puede estar vacío.")
+        self._nombre = valor.strip()
+    
+    @property
+    def precio_base(self):
+        return self._precio_base
+    
+    @precio_base.setter
+    def precio_base(self, valor):
+        if not isinstance(valor, (int, float)) or valor < 0:
+            raise ServicioNoDisponibleError(f"El precio base debe ser un número positivo. Dado: {valor}")
+        self._precio_base = float(valor)
+    
     @abstractmethod
-    def calcular_costo(self, unidad):
-        """Método polimórfico para el cálculo de tarifas."""
+    def calcular_costo(self, duracion, **kwargs):
+        """Calcula el costo con duración y parámetros opcionales (descuento, impuesto)"""
         pass
+    
+    @abstractmethod
+    def descripcion(self):
+        """Retorna una breve descripción del servicio"""
+        pass
+    
+    def mostrar_resumen(self):
+        """Muestra información básica del servicio"""
+        return f"Código: {self._codigo} | {self.nombre} | {formato_cop(self.precio_base)}"
 
 class ReservaSala(Servicio):
     """Servicio 1: Cálculo basado en horas de uso."""
@@ -160,50 +206,7 @@ class Reserva:
 # SIMULACIÓN DE OPERACIONES (10 Casos de Prueba)
 # Demostración de robustez ante datos válidos e inválidos.
 # =================================================================
-def iniciar_simulacion():
-    print("=== SOFTWARE FJ - SISTEMA DE GESTIÓN PROFESIONAL ===\n")
-    
-    # 1. Definición de Catálogo de Servicios
-    sala_vip = ReservaSala("Sala de Juntas VIP", 80000)
-    laptops = AlquilerEquipo("Pack Laptops", 50000)
-    consultoria = AsesoriaEspecializada("Consultoría IT", 150000)
-
-    # 2. Creación de clientes (Casos 1, 2 y 3)
-    try:
-        c1 = Cliente("001", "Yeyson Martínez", "yeyson@correo.com") # Válido
-        c2 = Cliente("002", "Ana Luz", "ana@correo.com")           # Válido
-        # Caso 4: Cliente con datos inválidos (Lanzará excepción)
-        c_error = Cliente("003", "", "correo_falso") 
-    except DatosInvalidosError as e:
-        print(f"CASO 4 (Validación): {e}\n")
-        c_error = None
-
-    # Caso 1: Reserva de sala exitosa
-    Reserva(c1, sala_vip, 4).procesar_reserva()
-
-    # Caso 2: Alquiler de equipos exitoso
-    Reserva(c2, laptops, 3).procesar_reserva()
-
-    # Caso 3: Asesoría especializada con IVA exitosa
-    Reserva(c1, consultoria, 2).procesar_reserva()
-
-    # Caso 5: Error por horas negativas en sala
-    Reserva(c2, sala_vip, -5).procesar_reserva()
-
-    # Caso 6: Error por cantidad cero en equipos
-    Reserva(c1, laptops, 0).procesar_reserva()
-
-    # Caso 7: Intento de reserva con cliente inválido (None)
-    Reserva(c_error, sala_vip, 2).procesar_reserva()
-
-    # Caso 8: Reserva de sala por tiempo prolongado
-    Reserva(c2, sala_vip, 12).procesar_reserva()
-
-    # Caso 9: Alquiler masivo de equipos
-    Reserva(c1, laptops, 20).procesar_reserva()
-
-    # Caso 10: Asesoría de una sola hora
-    Reserva(c2, consultoria, 1).procesar_reserva()
-
-if __name__ == "__main__":
-    iniciar_simulacion()
+def  iniciar_simulacion():
+    print("=== PRUEBA DE SERVICIO (sin reservas aún) ===\n")
+    # Solo probamos que la clase Servicio y sus hijas no se usan aún (este cambio será temporal)
+    print("Esperando modificaciones de servicios concretos...")
