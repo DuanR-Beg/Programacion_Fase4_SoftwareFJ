@@ -1,5 +1,5 @@
 # 🚀 Software FJ - Sistema de Gestión de Clientes, Servicios y Reservas
-## 📌 Acerca de este repositorio
+##  Acerca de este repositorio
 
 Este proyecto es un **fork** del repositorio original de [YeysonUnd/Programacion_Fase4_SoftwareFJ](https://github.com/YeysonUnd/Programacion_Fase4_SoftwareFJ), el cual sirvió como base funcional. A partir de ese código, se implementaron las siguientes **extensiones para cumplir completamente con los requerimientos de la tarea**:
 
