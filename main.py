@@ -8,9 +8,10 @@ from datetime import datetime
 # garantizar la estabilidad y trazabilidad del sistema.
 # =================================================================
 logging.basicConfig(
-    filename='sistema_errores.log',
-    level=logging.ERROR,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    filename='sistema.log',          # Cambiamos el nombre del archivo
+    level=logging.INFO,              # Cambiamos de ERROR a INFO
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'      # Añadimos el formato de fecha
 )
 
 # =================================================================
